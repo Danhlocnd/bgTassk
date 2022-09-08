@@ -7,11 +7,14 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_client/socket_io_client.dart';
+// import 'package:web_socket_channel/io.dart';
+// import 'package:web_socket_channel/web_socket_channel.dart';
+// import 'package:web_socket_channel/status.dart' as status;
 import 'package:workmanager/workmanager.dart';
 import 'package:http/http.dart' as http;
-
-
-
+import 'package:rxdart/subjects.dart';
 
 const simpleTaskKey = "be.tramckrijte.workmanagerExample.simpleTask";
 const rescheduledTaskKey = "be.tramckrijte.workmanagerExample.rescheduledTask";
@@ -21,57 +24,139 @@ const simplePeriodicTask =
     "be.tramckrijte.workmanagerExample.simplePeriodicTask";
 const simplePeriodic1HourTask =
     "be.tramckrijte.workmanagerExample.simplePeriodic1HourTask";
-
+String? selectedNotificationPayload;
+final BehaviorSubject<String?> selectNotificationSubject =
+    BehaviorSubject<String?>();
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
-
     if (task == 'uniquekey') {
-      final httpsUri = Uri(
-          scheme: 'https',
-          host: 'reqres.in',
-          path: 'api/users/2'
-      );
-      var response = await http.get(httpsUri);
-      Map data = jsonDecode(response.body);
-      final FlutterLocalNotificationsPlugin flutterlocal = FlutterLocalNotificationsPlugin();
-      const AndroidNotificationDetails androidNotificationDetails = AndroidNotificationDetails("channelId danhloc", "channelName android Noti",importance: Importance.max,priority: Priority.high,showWhen: false);
-         const NotificationDetails platfromChanel = NotificationDetails(android: androidNotificationDetails);
+      // connectAndListen();
+      // final httpsUri = Uri(
+      //     scheme: 'https',
+      //     host: 'reqres.in',
+      //     path: 'api/users/2'
+      // );
+      // var response = await http.get(httpsUri);
+      // Map data = jsonDecode(response.body);
+      // final FlutterLocalNotificationsPlugin flutterlocal =
+      //     FlutterLocalNotificationsPlugin();
+      // const AndroidNotificationDetails androidNotificationDetails =
+      //     AndroidNotificationDetails(
+      //         "channelId danhloc", "channelName android Noti",
+      //         importance: Importance.max,
+      //         priority: Priority.high,
+      //         showWhen: false);
+      // const NotificationDetails platfromChanel =
+      //     NotificationDetails(android: androidNotificationDetails);
+      //
+      // await flutterlocal.show(0123, "data['data']['first_name']",
+      //     "data['data']['email']", platfromChanel,
+      //     payload: 'item x ');
 
-         await flutterlocal.show(0,data['data']['first_name'],data['data']['email'], platfromChanel,payload: 'item x ');
-
+      // final _channel = IOWebSocketChannel.connect(
+      //   Uri.parse('wss://demo.piesocket.com/v3/channel_1?api_key=VCXCEuvhGcBDP7XhiJJUDvR1e1D3eiVjgZ9VRiaV&notify_self'),
+      // );
+      // _channel.stream.listen((message) async {
+      //
+      //   print(message);
+      //   // if(message == "Hello world!"){
+      //     final FlutterLocalNotificationsPlugin flutterlocal =
+      //     FlutterLocalNotificationsPlugin();
+      //     const AndroidNotificationDetails androidNotificationDetails =
+      //     AndroidNotificationDetails(
+      //         "channelId danhloc", "channelName android Noti",
+      //         importance: Importance.max,
+      //         priority: Priority.high,
+      //         showWhen: false);
+      //     const NotificationDetails platfromChanel =
+      //     NotificationDetails(android: androidNotificationDetails);
+      //
+      //     await flutterlocal.show(0123, "data['data']['first_name']",
+      //         "data['data']['email']", platfromChanel,
+      //         payload: 'item x ');
+      //   // }
+      //   // Fluttertoast.showToast(msg: "$message", toastLength: Toast.LENGTH_SHORT);
+      //   // _channel.sink.add('received!');
+      //   // _channel.sink.close(status.goingAway);
+      // });
     }
-   return Future.value(true);
-   }
-
-  );
+    return Future.value(true);
+  });
 }
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
-  const AndroidInitializationSettings androiinitializationSettings = AndroidInitializationSettings("@mipmap/ic_launcher",);
-  const IOSInitializationSettings iosInitializationSettings = IOSInitializationSettings();
-   const InitializationSettings initializationSettings =  InitializationSettings(android: androiinitializationSettings,iOS: iosInitializationSettings);
+  const AndroidInitializationSettings androiinitializationSettings =
+      AndroidInitializationSettings(
+    "@mipmap/ic_launcher",
+  );
+  const IOSInitializationSettings iosInitializationSettings =
+      IOSInitializationSettings();
+  const InitializationSettings initializationSettings = InitializationSettings(
+      android: androiinitializationSettings, iOS: iosInitializationSettings);
 
-   await flutterLocalNotificationsPlugin.initialize(initializationSettings,onSelectNotification: onSelectNotification() );
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings,
+      onSelectNotification: onSelectNotification);
   Workmanager().initialize(
       callbackDispatcher, // The top level function, aka callbackDispatcher
-      // isInDebugMode: true // If enabled it will post a notification whenever the task is running. Handy for debugging tasks
-  );
+      isInDebugMode:
+          true // If enabled it will post a notification whenever the task is running. Handy for debugging tasks
+      );
 
-  Workmanager().registerPeriodicTask("1", "uniquekey",frequency: Duration(minutes: 15));
-  
+  // Workmanager().registerPeriodicTask(
+  //   "uniquekey",
+  //   "uniquekey",
+  //   // initialDelay: const Duration(seconds: 10),
+  // );
+
   runApp(const MyApp());
 }
 
- onSelectNotification () {
-   // if(payload != null) {
-     debugPrint('notification payload :  abc');
-     Fluttertoast.showToast(msg: "thông bao",toastLength: Toast.LENGTH_LONG);
-   // }
 
-   
+IO.Socket socket = IO.io('http://192.168.101.20:5000',OptionBuilder()
+    .setTransports(['websocket']).disableAutoConnect() // disable auto-connection// for Flutter or Dart VM
+    .build());
+void connectAndListen() {
+
+  socket.connect();
+
+  // socket.emit("signin", widget.sourchat.id);
+  socket.on('hello', (arg) => {print(arg)});
+
+  socket.onConnect((data) {
+    print("connect");
+    socket.on("message", (msg) {
+      print(msg);
+      socket.emit("message", {
+        "message": "message",
+        "sourceId": "sourceId",
+        "targetId": "targetId"
+      });
+    });
+  });
+
+  socket.onConnectError((data) {
+    log(data);
+  });
+
+  socket.onError((data) {
+    log(data);
+  });
+  print(socket.connected);
+  //When an event recieved from server, data is added to the stream
+  // socket.onDisconnect((_) => print('disconnect'));
+}
+
+Future onSelectNotification(String? payload) async {
+  if (payload != null) {
+    debugPrint('notification payload: $payload');
+  }
+  selectedNotificationPayload = payload;
+  selectNotificationSubject.add(payload);
 }
 
 class MyApp extends StatefulWidget {
@@ -82,147 +167,65 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  final TextEditingController _controller = TextEditingController();
+  @override
+  void initState() {
+    // TODO: implement initState
+    connectAndListen();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text("Flutter WorkManager Example"),
-        ),
-        body: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Text(
-                  "Plugin initialization",
-                  style: Theme.of(context).textTheme.headline5,
-                ),
-                ElevatedButton(
-                  child: Text("Start the Flutter background service"),
-                  onPressed: () async {
-                    final httpsUri = Uri(
-                        scheme: 'https',
-                        host: 'reqres.in',
-                        path: 'api/users/2'
-                        );
-                    var response = await http.get(httpsUri);
-                    Map data = json.decode(response.body);
-                    final FlutterLocalNotificationsPlugin flutterlocal = FlutterLocalNotificationsPlugin();
-                    const AndroidNotificationDetails androidNotificationDetails = AndroidNotificationDetails("channelId danhloc", "channelName android Noti",importance: Importance.max,priority: Priority.high,showWhen: false);
-                    const NotificationDetails platfromChanel = NotificationDetails(android: androidNotificationDetails);
-
-                    await flutterlocal.show(0,data['data']['first_name'],data['data']['email'], platfromChanel,payload: 'item x ');
-
-                  },
-                ),
-                SizedBox(height: 16),
-
-                //This task runs once.
-                //Most likely this will trigger immediately
-                ElevatedButton(
-                  child: Text("Register OneOff Task"),
-                  onPressed: () {
-                    Workmanager().registerOneOffTask(
-                      simpleTaskKey,
-                      simpleTaskKey,
-                      inputData: <String, dynamic>{
-                        'int': 1,
-                        'bool': true,
-                        'double': 1.0,
-                        'string': 'string',
-                        'array': [1, 2, 3],
-                      },
-                    );
-                  },
-                ),
-                ElevatedButton(
-                  child: Text("Register rescheduled Task"),
-                  onPressed: () {
-                    Workmanager().registerOneOffTask(
-                      rescheduledTaskKey,
-                      rescheduledTaskKey,
-                      inputData: <String, dynamic>{
-                        'key': Random().nextInt(64000),
-                      },
-                    );
-                  },
-                ),
-                ElevatedButton(
-                  child: Text("Register failed Task"),
-                  onPressed: () {
-                    Workmanager().registerOneOffTask(
-                      failedTaskKey,
-                      failedTaskKey,
-                    );
-                  },
-                ),
-                //This task runs once
-                //This wait at least 10 seconds before running
-                ElevatedButton(
-                    child: Text("Register Delayed OneOff Task"),
-                    onPressed: () {
-                      Workmanager().registerOneOffTask(
-                        simpleDelayedTask,
-                        simpleDelayedTask,
-                        initialDelay: Duration(seconds: 10),
-                        constraints: Constraints(
-                          // connected or metered mark the task as requiring internet
-                          networkType: NetworkType.connected,
-                          // require external power
-                          requiresCharging: true,
-                        ),
-
-                      );
-                    }),
-                SizedBox(height: 8),
-                //This task runs periodically
-                //It will wait at least 10 seconds before its first launch
-                //Since we have not provided a frequency it will be the default 15 minutes
-                ElevatedButton(
-                    child: Text("Register Periodic Task (Android)"),
-                    onPressed: Platform.isAndroid
-                        ? () {
-                      Workmanager().registerPeriodicTask(
-                        simplePeriodicTask,
-                        simplePeriodicTask,
-                        initialDelay: const Duration(seconds: 10),
-                        // frequency: const Duration(minutes: 30),
-
-                      );
-                    }
-                        : null),
-                //This task runs periodically
-                //It will run about every hour
-                ElevatedButton(
-                    child: Text("Register 1 hour Periodic Task (Android)"),
-                    onPressed: Platform.isAndroid
-                        ? () {
-                      Workmanager().registerPeriodicTask(
-                        simplePeriodicTask,
-                        simplePeriodic1HourTask,
-                        frequency: Duration(hours: 1),
-                      );
-                    }
-                        : null),
-                SizedBox(height: 16),
-                Text(
-                  "Task cancellation",
-                  style: Theme.of(context).textTheme.headline5,
-                ),
-                ElevatedButton(
-                  child: Text("Cancel All"),
-                  onPressed: () async {
-                    await Workmanager().cancelAll();
-                    print('Cancel all tasks completed');
-                  },
-                ),
-              ],
+        home: Scaffold(
+            appBar: AppBar(
+              title: Text("Flutter WorkManager Example"),
             ),
-          ),
-        ),
-      ),
-    );
+            body: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Form(
+                    child: TextFormField(
+                      controller: _controller,
+                      decoration:
+                          const InputDecoration(labelText: 'Send a message'),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  // StreamBuilder(
+                  //   stream: _channel.stream,
+                  //   builder: (context, snapshot) {
+                  //
+                  //     return Text(snapshot.hasData ? '${snapshot.data}' : '');
+                  //   },
+                  // )
+                ],
+              ),
+            ),
+            floatingActionButton: FloatingActionButton(
+              onPressed: () {
+                socket.emit("message", {
+                  "message": "message",
+                  "sourceId": "sourceId",
+                  "targetId": "targetId"
+                });
+              },
+              tooltip: 'Send message',
+              child: const Icon(Icons.send),
+              // This trailing comma makes auto-formatting nicer for build methods.
+            )));
   }
+
+  //
+  void _sendMessage() {}
+  //
+  // @override
+  // void dispose() {
+  //   _channel.sink.close();
+  //   _controller.dispose();
+  //   super.dispose();
+  // }
 }
