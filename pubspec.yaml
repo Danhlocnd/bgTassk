@@ -34,6 +34,8 @@ dependencies:
   path_provider: ^2.0.11
   fluttertoast: ^8.0.9
   socket_io_client: 2.0.0-beta.3-nullsafety.0
+  flutter_background_service: ^2.1.3
+  device_info_plus:
 #  web_socket_channel: ^2.2.0
   flutter_local_notifications:
   http:
