@@ -188,7 +188,7 @@ void onStart(ServiceInstance service) async {
  connectAndListen() async {
 
   IO.Socket socket = IO.io(
-      'http://192.168.101.20:5000',
+      'http://222.252.17.169:5000',
       OptionBuilder()
           .setTransports(['websocket'])
           .disableAutoConnect() // disable auto-connection// for Flutter or Dart VM
